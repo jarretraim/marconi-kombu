@@ -16,23 +16,36 @@ class Worker(ConsumerMixin):
                          callbacks=[self.process_task])]
 
     def process_task(self, body, message):
-        fun = body["fun"]
-        args = body["args"]
-        kwargs = body["kwargs"]
-        self.info("Got task: %s", reprcall(fun.__name__, args, kwargs))
+        fun = body['fun']
+        args = body['args']
+        kwargs = body['kwargs']
+        print 'Got task: %s', reprcall(fun.__name__, args, kwargs)
         try:
             fun(*args, **kwdict(kwargs))
         except Exception, exc:
-            self.error("task raised exception: %r", exc)
+            print 'task raised exception: %r', exc
         message.ack()
 
-if __name__ == "__main__":
-    from kombu import BrokerConnection
-    from kombu.utils.debug import setup_logging
-    setup_logging(loglevel="INFO")
+    def on_connection_error(self, exc, interval):
+        print "Connection error"
 
-    with BrokerConnection("amqp://guest:guest@192.168.33.10:5672//") as conn:
+    def on_consume_ready(self, connection, channel, consumers):
+        print "Ready to consume messages"
+
+
+if __name__ == '__main__':
+    from kombu import Connection
+
+    with Connection('amqp://guest:guest@192.168.64.10:5672//') as conn:
         try:
+            print "Starting Worker"
             Worker(conn).run()
         except KeyboardInterrupt:
-            print("bye bye")
+            print('bye bye')
+
+
+
+
+
+
+
