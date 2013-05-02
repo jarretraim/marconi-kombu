@@ -1,5 +1,3 @@
-from __future__ import with_statement
-
 from kombu.common import maybe_declare
 from kombu.pools import producers
 
@@ -17,11 +15,11 @@ def send_as_task(connection, fun, args=(), kwargs={}, priority='mid'):
     routing_key = priority_to_routing_key[priority]
 
     with producers[connection].acquire(block=True) as producer:
-        maybe_declare(task_exchange, producer.channel)
         producer.publish(payload,
                          serializer='pickle',
                          compression='bzip2',
                          exchange=task_exchange,
+                         declare=[task_exchange],
                          routing_key=routing_key)
 
 if __name__ == '__main__':
@@ -31,6 +29,6 @@ if __name__ == '__main__':
     connection = Connection('amqp://guest:guest@192.168.64.10:5672//')
     for i in range (1, 10):
       send_as_task(connection, fun=hello_task, args=('Kombu', ), kwargs={},
-                   priority='high')
+                 priority='high')
       print "Message %d sent." % (i)
       time.sleep(1)
