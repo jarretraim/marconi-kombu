@@ -15,7 +15,7 @@ def create_connection():
     "auth_endpoint": "https://identity.api.rackspacecloud.com/v2.0"
   }
 
-  return Connection(conn_string, transport_options=transport_options)  
+  return Connection(conn_string, transport_options=transport_options, ssl=False)  
 
 task_exchange = Exchange('tasks', type='direct')
 task_queues = [Queue('hipri', task_exchange, routing_key='hipri'),
