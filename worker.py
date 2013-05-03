@@ -2,7 +2,7 @@ from kombu.mixins import ConsumerMixin
 from kombu.log import get_logger
 from kombu.utils import kwdict, reprcall
 
-from queues import task_queues
+from queues import task_queues, create_connection
 
 logger = get_logger(__name__)
 
@@ -29,12 +29,12 @@ class Worker(ConsumerMixin):
         message.ack()
 
 if __name__ == '__main__':
-    from kombu import Connection
-    from kombu.utils.debug import setup_logging
+    #from kombu import Connection
+    #from kombu.utils.debug import setup_logging
     # setup root logger
-    setup_logging(loglevel='INFO', loggers=[''])
+    #setup_logging(loglevel='INFO', loggers=[''])
 
-    with Connection('amqp://guest:guest@192.168.64.10:5672//') as conn:
+    with create_connection() as conn:
         try:
             worker = Worker(conn)
             worker.run()

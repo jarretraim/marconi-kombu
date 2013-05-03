@@ -1,9 +1,12 @@
 from kombu.common import maybe_declare
+from kombu.log import get_logger
 from kombu.pools import producers
 
-from queues import task_exchange
+from queues import task_exchange, create_connection
 
 import time
+
+logger = get_logger(__name__)
 
 priority_to_routing_key = {'high': 'hipri',
                            'mid': 'midpri',
@@ -23,12 +26,13 @@ def send_as_task(connection, fun, args=(), kwargs={}, priority='mid'):
                          routing_key=routing_key)
 
 if __name__ == '__main__':
-    from kombu import Connection
     from tasks import hello_task
 
-    connection = Connection('amqp://guest:guest@192.168.64.10:5672//')
-    for i in range (1, 10):
-      send_as_task(connection, fun=hello_task, args=('Kombu', ), kwargs={},
-                 priority='high')
-      print "Message %d sent." % (i)
-      time.sleep(1)
+    connection = create_connection()
+    logger.info (connection.info())
+
+    #for i in range (1, 10):
+    send_as_task(connection, fun=hello_task, args=('Kombu', ), kwargs={},
+               priority='high')
+    #  logger.info ("Message %d sent." % (i))
+
