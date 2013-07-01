@@ -13,13 +13,12 @@ priority_to_routing_key = {'high': 'hipri',
                            'low': 'lopri'}
 
 
-def send_as_task(connection, fun, args=(), kwargs={}, priority='mid'):
-    payload = {'fun': fun, 'args': args, 'kwargs': kwargs}
+def send_as_task(connection, payload={}, kwargs={}, priority='mid'):
     routing_key = priority_to_routing_key[priority]
 
     with producers[connection].acquire(block=True) as producer:
         producer.publish(payload,
-                         serializer='pickle',
+                         serializer='json',
                          compression='bzip2',
                          exchange=task_exchange,
                          declare=[task_exchange],
@@ -29,10 +28,11 @@ if __name__ == '__main__':
     from tasks import hello_task
 
     connection = create_connection()
-    logger.info (connection.info())
+    logger.info (connection.info())    
 
     #for i in range (1, 10):
-    send_as_task(connection, fun=hello_task, args=('Kombu', ), kwargs={},
+    payload = { 'message': 'Test message' }
+    send_as_task(connection, payload=payload, kwargs={},
                priority='high')
     #  logger.info ("Message %d sent." % (i))
 
